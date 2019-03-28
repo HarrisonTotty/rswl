@@ -1,0 +1,219 @@
+// wl.pest - The Wolfram Language expression grammer.
+
+// ----- Whitespace & Comments ------
+
+COMMENT    = _{ "(*" ~ (!"*)" ~ ANY) ~ "*)" }
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+// ----------------------------------
+
+
+// ----- Atomic Expressions -----
+
+// Atoms
+Atom = { Number | String | Symbol }
+
+// Strings
+String    = ${ "\"" ~ str_inner ~ "\"" }
+str_inner = @{ str_char* }
+str_char  =  {
+    !("\"" | "\\") ~ ANY |
+    "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t") |
+    "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+}
+
+// Numbers
+Integer  = @{ "-"? ~ ASCII_DIGIT+ }           // We want to support "000001" 
+Real     = @{ Integer ~ "." ~ ASCII_DIGIT* }  // We want to support "1."
+Rational =  { Integer ~ "/" ~ Integer }
+Number   =  { Integer | Real | Rational }
+
+// Symbols
+Symbol = @{ ASCII_ALPHA ~ ASCII_ALPHANUMERIC* }
+
+// ------------------------------
+
+
+// ----- Complex Expressions -----
+
+// Basic comma seperated expressions
+comma_sep_exp = { (Expression ~ ",")* ~ Expression }
+
+// Expressions that can take "[...]", "[[...]]", etc.
+closed_form = {
+    Application |
+    Association |
+    Atom |
+    List |
+    Out |
+    Parentheses |
+    Part
+}
+
+// Alternatives
+Alternatives = { (Expression ~ "|")+ ~ Expression }
+
+// And
+And = { Expression ~ "&&" ~ Expression }
+
+// Application
+Application       = ${ closed_form ~ application_inner }
+application_inner = { "[" ~ comma_sep_exp? ~ "]" }
+
+// Apply
+Apply = { Expression ~ "@@" ~ Expression }
+
+// Association
+Association = { "<|" ~ (Rule ~ ",")* ~ Rule ~ "|>" }
+
+// Blank
+Blank = ${ "_" ~ Symbol* }
+
+// BlankNullSequence
+BlankNullSequence = ${ "___" ~ Symbol* }
+
+// BlankSequence
+BlankSequence = ${ "__" ~ Symbol* }
+
+// CompoundExpression
+CompoundExpression = { (Expression ~ ";")+ ~ Expression }
+
+// Divide
+Divide = { Expression ~ "/" ~ Expression }
+
+// Equal
+Equal = { Expression ~ "==" ~ Expression }
+
+// Function
+Function = { Expression ~ "&" }
+
+// List
+List = { "{" ~ comma_sep_exp? ~ "}" }
+
+// Map
+Map = { Expression ~ "/@" ~ Expression }
+
+// Minus
+Minus = { "-" ~ Expression }
+
+// Not
+Not = { "!" ~ Expression }
+
+// Or
+Or = { Expression ~ "||" ~ Expression }
+
+// Out
+Out = ${ ("%" ~ ASCII_DIGIT*) | "%%" }
+
+// Parentheses
+Parentheses = { "(" ~ Expression ~ ")" }
+
+// Part
+Part       = ${ closed_form ~ part_inner }
+part_inner =  { "[[" ~ comma_sep_exp ~ "]]" }
+
+// Pattern
+Pattern = ${ Symbol ~ ":" ~ Expression }
+
+// Postfix
+Postfix = { Expression ~ "//" ~ Expression }
+
+// Power
+Power = { Expression ~ "^" ~ Expression }
+
+// Prefix
+Prefix = { Expression ~ "@" ~ Expression }
+
+// Repeated
+Repeated = ${ closed_form ~ ".." }
+
+// ReplaceAll
+ReplaceAll = { Expression ~ "/." ~ Expression }
+
+// Rule
+Rule = { Expression ~ "->" ~ Expression }
+
+// SameQ
+Same = { Expression ~ "===" ~ Expression }
+
+// Set
+Set = { Expression ~ "=" ~ Expression }
+
+// SetDelayed
+SetDelayed = { Expression ~ ":=" ~ Expression }
+
+// Slot
+Slot = ${ "#" ~ (Integer | Symbol) }
+
+// Span
+Span = { Expression ~ ";;" ~ Expression }
+
+// StringExpression
+StringExpression = { Expression ~ "~~" ~ Expression }
+
+// StringJoin
+StringJoin = { Expression ~ "<>" ~ Expression }
+
+// Subtract
+Subtract = { Expression ~ "-" ~ Expression }
+
+// Times
+Times = { (Expression ~ "*" ~ Expression) | (Expression ~ " " ~ Expression) }
+
+// Unequal
+Unequal = { Expression ~ "!=" ~ Expression }
+
+// Unsame
+Unsame = { Expression ~ "=!=" ~ Expression }
+
+// Unset
+Unset = { Expression ~ "=." }
+
+// Core Expression Structure
+Expression = {
+    Alternatives |
+    And |
+    Application |
+    Apply |
+    Association |
+    Atom |
+    Blank |
+    BlankNullSequence |
+    BlankSequence |
+    CompoundExpression |
+    Divide |
+    Equal |
+    Function |
+    List |
+    Map |
+    Minus |
+    Not |
+    Or |
+    Out |
+    Parentheses |
+    Part |
+    Pattern |
+    Postfix |
+    Power |
+    Prefix |
+    Repeated |
+    ReplaceAll |
+    Rule |
+    Same |
+    Set |
+    SetDelayed |
+    Slot |
+    Span |
+    StringExpression |
+    StringJoin |
+    Subtract |
+    Times |
+    Unequal |
+    Unsame |
+    Unset
+}
+
+// The Overall input structure
+Input = {SOI ~ Expression ~ EOI}
+
+// -------------------------------

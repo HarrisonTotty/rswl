@@ -1,0 +1,32 @@
+[package]
+authors = ["Harrison Totty <harrisongtotty@gmail.com>"]
+description = "A Wolfram Language interpreter written in Rust."
+edition = "2018"
+name = "wl"
+publish = false
+version = "0.1.0"
+
+[dependencies.chrono]
+version = "0.4"
+
+[dependencies.clap]
+features = ["color"]
+version = "2.32.0"
+
+[dependencies.colored]
+version = "1.7.0"
+
+[dependencies.fern]
+version = "0.5.7"
+
+[dependencies.log]
+version = "0.4.6"
+
+[dependencies.pest]
+version = "2.1.0"
+
+[dependencies.pest_derive]
+version = "2.1.0"
+
+[dependencies.rustyline]
+version = "3.0.0"
